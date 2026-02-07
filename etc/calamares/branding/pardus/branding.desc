@@ -1,0 +1,39 @@
+---
+componentName:   pardus
+welcomeStyleCalamares: false
+welcomeExpandingLogo: true
+windowExpanding: normal
+windowSize: 800px,580px
+windowPlacement: center
+
+strings:
+    productName:         Pardus GNU/Linux
+    shortProductName:    Pardus
+    version:             25
+    shortVersion:        25
+    versionedName:       Pardus 25
+    shortVersionedName:  Pardus 25
+    bootloaderEntryName: Pardus
+    productUrl:          https://pardus.org.tr/
+    supportUrl:          https://pardus.org.tr/
+    knownIssuesUrl:      https://pardus.org.tr/
+    releaseNotesUrl:     https://pardus.org.tr/
+    donateUrl:           https://pardus.org.tr/
+
+sidebar: widget
+navigation: widget
+
+images:
+    productLogo:         "tubitak.svg"
+    productIcon:         "tubitak.svg"
+    productWelcome:      "pardus.png"
+
+slideshow:               "show.qml"
+
+style:
+  SidebarBackground: "#1f3f52"
+  SidebarText: "#ffffff"
+  SidebarTextCurrent: "#ffffff"
+  SidebarBackgroundCurrent: "#2f6f8f"
+
+slideshowAPI: 2
