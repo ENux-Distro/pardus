@@ -1,0 +1,6 @@
+---
+type:       "job"
+name:       "bedrock"
+interface:  "process"
+command:    "bash /usr/lib/calamares/modules/bedrock/bedrock.sh"
+chroot:     true
