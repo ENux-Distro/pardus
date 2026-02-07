@@ -1,6 +1,6 @@
 # Pardus Package Manager
 
-In order to install the Pardus-Installer on your **live** Pardus system, you need to these steps:
+In order to install the Pardus Package Manager on your Pardus system, you need to these steps:
 
 1- Git clone the repo via `sudo apt install git && git clone --depth 1 https://github.com/ENux-Distro/Pardus-Installer.git`
 
