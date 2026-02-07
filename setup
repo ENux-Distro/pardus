@@ -2,10 +2,11 @@
 
 [ "$EUID" -ne 0 ] && echo "Run as root / Root ile çalıştırınız" && exit 1
 
-apt -qqq install calamares* -y
+apt -qqq install calamares calamares-settings-debian -y
 
-cp calamares-install-debian.desktop /usr/share/applications/
-mkdir -p /usr/share/calamares && cp -r usr/share/calamares/* /usr/share/calamares
+cp calamares-install-pardus.desktop /home/pardus/Desktop/ || true
+cp calamares-install-pardus.desktop /home/pardus/Masaüstü/ || true
+
 mkdir -p /usr/lib/calamares && cp -r usr/lib/calamares/* /usr/lib/calamares
 mkdir -p /etc/calamares && cp -r etc/calamares/* /etc/calamares/
 
