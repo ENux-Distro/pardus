@@ -2,8 +2,6 @@
 
 APT=/usr/bin/apt
 
-[ "$EUID" -ne 0 ] && echo "Error: sudo ile çalıştırınız" && exit 1
-
 case "$1" in
   "" )
     echo
