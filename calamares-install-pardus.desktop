@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Install Pardus
+GenericName=Pardus Installer
+Exec=pardus-installer
+Comment=Pardus Installer for Pardus Lıve
+Keywords=pardus;installer
+Icon=/etc/calamares/branding/pardus/icon.svg
+Terminal=false
+Categories=Qt;System;
+StartupWMClass=calamares
+StartupNotify=True
