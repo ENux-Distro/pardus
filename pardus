@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+APT=/usr/bin/apt
+
+[ "$EUID" -ne 0 ] && echo "Error: sudo ile çalıştırınız" && exit 1
+
+case "$1" in
+  "" )
+    echo
+    echo "Pardus Package Manager"
+    echo "Daha fazla bilgi için --about komutunu kullanın"
+    exit 0
+    ;;
+  --about )
+    echo
+    echo "Pardus Package Manager"
+    echo "Basit Komutlar:"
+    echo "install - İstediğiniz paketi indirir"
+    echo "remove - İstediğiniz paketi siler"
+    echo "update - Güncelleme yapar"
+    echo "upgrade - Paket versionlarını arttrır"
+    echo
+    exit 0
+    ;;
+  install|remove|purge|update|upgrade|full-upgrade|search|show|list|autoremove )
+    [ "$EUID" -ne 0 ] && echo "Error: sudo ile çalıştırınız" && exit 1
+    exec $APT "$@"
+    ;;
+  * )
+    [ "$EUID" -ne 0 ] && echo "Error: sudo ile çalıştırınız" && exit 1
+    exec $APT "$@"
+    ;;
+esac
