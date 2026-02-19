@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+DESKTOP_FILE="/usr/share/applications/pardus.desktop"
+
+echo "Creating the desktop shortcut | Masaüstü kısayolu oluşturuluyor."
+
+sudo tee "$DESKTOP_FILE" > /dev/null <<EOF
+[Desktop Entry]
+Name=Pardus Package Manager
+Name[tr]=Pardus Paket Yöneticisi
+Comment=Interactive package manager for Pardus
+Comment[tr]=Pardus için etkileşimli paket yöneticisi
+Exec=pkexec x-terminal-emulator -e /usr/bin/pardus
+Icon=system-software-install
+Terminal=false
+Type=Application
+Categories=System;
+EOF
+
+sudo chmod 644 "$DESKTOP_FILE"
+
+DESKTOP_DIR=$(xdg-user-dir DESKTOP 2>/dev/null)
+
+if [ -n "$DESKTOP_DIR" ]; then
+    cp "$DESKTOP_FILE" "$DESKTOP_DIR/pardus.desktop"
+    chmod 755 "$DESKTOP_DIR/pardus.desktop"
+    echo "Desktop shortcut copied."
+fi
+
+echo "Desktop shortcut created successfully | Masaüstü kısayolu başarıyla oluşturuldu"
