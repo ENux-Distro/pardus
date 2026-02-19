@@ -10,9 +10,9 @@ Name=Pardus Package Manager
 Name[tr]=Pardus Paket Yöneticisi
 Comment=Interactive package manager for Pardus
 Comment[tr]=Pardus için etkileşimli paket yöneticisi
-Exec=pkexec x-terminal-emulator -e /usr/bin/pardus
+Exec=/usr/bin/pardus
 Icon=system-software-install
-Terminal=false
+Terminal=true
 Type=Application
 Categories=System;
 EOF
