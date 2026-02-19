@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+APT="/usr/bin/apt"
+
+case "$1" in
+  "" )
+    exec /usr/bin/pardus-helper
+    ;;
+
+  --about )
+    echo
+    echo "Pardus Package Manager"
+    echo "Basit Komutlar:"
+    echo "install - İstediğiniz paketi indirir"
+    echo "remove - İstediğiniz paketi siler"
+    echo "update - Güncelleme yapar"
+    echo "upgrade - Paket versionlarını artırır"
+    echo
+    exit 0
+    ;;
+
+  --version )
+    echo
+    echo "Versiyon 1.0"
+    echo
+    exit 0
+    ;;
+
+  # Commands that DO NOT require sudo
+  search|show|list )
+    exec "$APT" "$@"
+    ;;
+
+  # Commands that DO require sudo
+  install|remove|purge|update|upgrade|full-upgrade|autoremove )
+    [ "$EUID" -ne 0 ] && { echo "Error: sudo ile çalıştırınız"; exit 1; }
+    exec "$APT" "$@"
+    ;;
+
+  * )
+    exec "$APT" "$@"
+    ;;
+esac

@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+APT="/usr/bin/apt"
+TITLE="Pardus Package Manager"
+
+# --- Language Selection ---
+LANGUAGE=$(whiptail --title "$TITLE" --menu "Select Language / Dil Seçiniz" 15 60 2 \
+"EN" "English" \
+"TR" "Türkçe" \
+3>&1 1>&2 2>&3)
+
+[ $? -ne 0 ] && exit 0
+
+# --- Texts Based on Language ---
+if [ "$LANGUAGE" = "TR" ]; then
+    MENU_TEXT="Yapmak istediğiniz işlemi seçin:"
+    INSTALL="Seçtiğiniz paketi sisteminize kurar"
+    REMOVE="Seçtiğiniz paketi sisteminizden kaldırır"
+    UPDATE="Sistemi günceller"
+    UPGRADE="Sistemi yükseltir"
+    SEARCH="Seçtiğiniz paketi arar"
+    EXIT="Çıkış yapar"
+    PKG_TEXT="Paket adını girin:"
+else
+    MENU_TEXT="Select operation:"
+    INSTALL="Install's your desired package"
+    REMOVE="Remove's your desired package"
+    UPDATE="Update's the system"
+    UPGRADE="Upgrade's the system "
+    SEARCH="Search's for your desired package"
+    EXIT="Exits"
+    PKG_TEXT="Enter package name:"
+fi
+
+# --- Main Menu ---
+CHOICE=$(whiptail --title "$TITLE" --menu "$MENU_TEXT" 20 70 6 \
+"install" "$INSTALL" \
+"remove" "$REMOVE" \
+"update" "$UPDATE" \
+"upgrade" "$UPGRADE" \
+"search" "$SEARCH" \
+"exit" "$EXIT" \
+3>&1 1>&2 2>&3)
+
+[ $? -ne 0 ] && exit 0
+[ "$CHOICE" = "exit" ] && exit 0
+
+# --- Update / Upgrade (no package needed) ---
+if [ "$CHOICE" = "update" ] || [ "$CHOICE" = "upgrade" ]; then
+    whiptail --title "$TITLE" --infobox "Processing..." 8 50
+    sleep 1
+    $APT "$CHOICE" -y
+    exit 0
+fi
+
+# --- Ask for Package ---
+PACKAGE=$(whiptail --inputbox "$PKG_TEXT" 10 60 3>&1 1>&2 2>&3)
+
+[ $? -ne 0 ] &&
+[ -z "$PACKAGE" ] &&
+
+# --- Execute ---
+whiptail --title "$TITLE" --infobox "Processing..." 8 50
+sleep 1
+
+case "$CHOICE" in
+    install)
+        $APT install -y "$PACKAGE"
+        ;;
+    remove)
+        $APT purge -y "$PACKAGE"
+        $APT autoremove -y
+        ;;
+    search)
+        $APT search "$PACKAGE"
+        ;;
+esac
