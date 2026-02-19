@@ -28,15 +28,15 @@ case "$1" in
 
   # Commands that DO NOT require sudo
   search|show|list )
-    sudo bash "$APT" "$@"
+    sudo "$APT" "$@"
     ;;
 
   # Commands that DO require sudo
   install|remove|purge|update|upgrade|full-upgrade|autoremove )
-    sudo bash "$APT" "$@"
+    sudo "$APT" "$@"
     ;;
 
   * )
-    sudo bash "$APT" "$@"
+    sudo "$APT" "$@"
     ;;
 esac
