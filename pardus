@@ -4,7 +4,7 @@ APT="/usr/bin/apt"
 
 case "$1" in
   "" )
-    exec /usr/bin/pardus-helper
+    sudo bash /usr/bin/pardus-helper
     ;;
 
   --about )
@@ -28,16 +28,15 @@ case "$1" in
 
   # Commands that DO NOT require sudo
   search|show|list )
-    exec "$APT" "$@"
+    sudo bash "$APT" "$@"
     ;;
 
   # Commands that DO require sudo
   install|remove|purge|update|upgrade|full-upgrade|autoremove )
-    [ "$EUID" -ne 0 ] && { echo "Error: sudo ile çalıştırınız"; exit 1; }
-    exec "$APT" "$@"
+    sudo bash "$APT" "$@"
     ;;
 
   * )
-    exec "$APT" "$@"
+    sudo bash "$APT" "$@"
     ;;
 esac
