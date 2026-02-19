@@ -12,3 +12,6 @@ uninstall:
 	sudo rm -f $(BINDIR)/pardus
 	sudo rm -f $(BINDIR)/pardus-helper
 	@echo "Uninstall complete | Silinme operasyonu bitmiştir"
+
+desktop:
+        bash helpers/pardus-desktop
