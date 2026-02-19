@@ -26,6 +26,6 @@ After everything went succesfully, you now have installed the Pardus Package Man
 
 **2: The CLI Method (Recommended for intermediate/experts)**
 
-- Run **pardus** [operation] <package>
+- Run **pardus** **[operation]** **[package]**
 
 - Let the package manager do its thing
