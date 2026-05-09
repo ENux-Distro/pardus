@@ -14,7 +14,7 @@ After everything went succesfully, you now have installed the Pardus Package Man
 
 ## How to Use the Pardus Package Manager
 
-**1: The TUI Method (Recommended for beginners)**
+**1: The GUI Method (Recommended for beginners)**
 
 - Run **pardus** on the terminal, or with our desktop shortcut.
 
@@ -24,7 +24,17 @@ After everything went succesfully, you now have installed the Pardus Package Man
 
 - Let the package manager do its thing.
 
-**2: The CLI Method (Recommended for intermediate/experts)**
+**2: The TUI Method (Recommended for intermediates)**
+
+- Run **pardus --tui** on the terminal, or with our desktop shortcut.
+
+- Choose your operation.
+
+- On install and remove, it'll ask for a package, type it.
+
+- Let the package manager do its thing.
+
+**2: The CLI Method (Recommended for experts)**
 
 - Run **pardus** **[operation]** **[package]**
 
