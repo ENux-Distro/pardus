@@ -1,0 +1,956 @@
+#!/usr/bin/env python3
+
+import sys
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QLabel, QPushButton, QLineEdit, QTextEdit, QProgressBar,
+    QStackedWidget, QFrame, QDialog,
+    QGraphicsDropShadowEffect, QListWidget,
+)
+from PyQt6.QtCore import (
+    Qt, QProcess, QTimer, QPropertyAnimation, QEasingCurve, pyqtSignal,
+)
+from PyQt6.QtGui import (
+    QColor, QFont, QPixmap, QPainter, QBrush, QPen, QTextCursor,
+)
+
+C_BG      = "#0d0d0d"
+C_SIDEBAR = "#111111"
+C_CARD    = "#181818"
+C_BORDER  = "#2a2a2a"
+C_YELLOW  = "#f5c400"
+C_YELLOW2 = "#ffd740"
+C_WHITE   = "#f0f0f0"
+C_GREY    = "#888888"
+C_DIMGREY = "#444444"
+C_RED     = "#e03c3c"
+C_RED2    = "#ff5555"
+C_GREEN   = "#3ddc84"
+C_DARKRED = "#2a0a0a"
+
+TR = {
+    "EN": {
+        "app_title":          "Pardus Package Manager",
+        "nav_search":         "Search",
+        "nav_install":        "Install",
+        "nav_remove":         "Remove",
+        "nav_update":         "Update",
+        "nav_upgrade":        "Upgrade",
+        "nav_console":        "Console",
+        "search_placeholder": "Search for a package...",
+        "search_btn":         "Search",
+        "install_placeholder":"Package name to install...",
+        "install_btn":        "Install Package",
+        "remove_placeholder": "Package name to remove...",
+        "remove_btn":         "Remove Package",
+        "update_title":       "Update Package Lists",
+        "update_desc":        "Fetches the latest package index from all configured repositories.",
+        "update_btn":         "Run apt update",
+        "upgrade_title":      "Upgrade All Packages",
+        "upgrade_desc":       "Upgrades every installed package to its latest available version.",
+        "upgrade_btn":        "Run apt upgrade",
+        "console_title":      "Console Output",
+        "console_clear":      "Clear",
+        "console_copy":       "Copy All",
+        "status_ready":       "Ready",
+        "status_running":     "Running...",
+        "status_done":        "Done",
+        "status_error":       "Error",
+        "lang_toggle":        "Türkce",
+        "results_for":        "Results for",
+        "no_results":         "No packages found.",
+        "toast_ok":           "Operation completed successfully.",
+        "toast_err":          "Operation failed. See console.",
+        "confirm_remove":     "Remove package?",
+        "confirm_yes":        "Yes, Remove",
+        "confirm_no":         "Cancel",
+        "pkg_required":       "Please enter a package name.",
+    },
+    "TR": {
+        "app_title":          "Pardus Paket Yöneticisi",
+        "nav_search":         "Ara",
+        "nav_install":        "Kur",
+        "nav_remove":         "Kaldır",
+        "nav_update":         "Güncelle",
+        "nav_upgrade":        "Yükselt",
+        "nav_console":        "Konsol",
+        "search_placeholder": "Paket ara...",
+        "search_btn":         "Ara",
+        "install_placeholder":"Kurulacak paket adı...",
+        "install_btn":        "Paketi Kur",
+        "remove_placeholder": "Kaldirilacak paket adı...",
+        "remove_btn":         "Paketi Kaldir",
+        "update_title":       "Paket Listelerini Güncelle",
+        "update_desc":        "Tüm yapılandırılmış depolardan güncel paket indeksini çeker.",
+        "update_btn":         "apt update çaliştır",
+        "upgrade_title":      "Tüm Paketleri Yükselt",
+        "upgrade_desc":       "Kurulu tüm paketleri mevcut en son sürümlere yükseltir.",
+        "upgrade_btn":        "apt upgrade çalıştır",
+        "console_title":      "Konsol Çıktısı",
+        "console_clear":      "Temizle",
+        "console_copy":       "Tümünü Kopyala",
+        "status_ready":       "",
+        "status_running":     "Çalışıyor...",
+        "status_done":        "Tamamlandı",
+        "status_error":       "Hata",
+        "lang_toggle":        "English",
+        "results_for":        "Sonuçlar:",
+        "no_results":         "Paket bulunamadı.",
+        "toast_ok":           "İşlem başarıyla tamamlandı.",
+        "toast_err":          "İşlem başarısız. Konsola bakın.",
+        "confirm_remove":     "Paket kaldırılsın mı?",
+        "confirm_yes":        "Evet, Kaldır",
+        "confirm_no":         "İptal",
+        "pkg_required":       "Lutfen bir paket adı girin.",
+    },
+}
+
+QSS = """
+* {
+    font-family: 'Inter', 'Noto Sans', 'Segoe UI', sans-serif;
+    font-size: 13px;
+    color: #f0f0f0;
+    background: transparent;
+    border: none;
+    outline: none;
+}
+QMainWindow, QDialog { background: #0d0d0d; }
+
+#sidebar {
+    background: #111111;
+    border-right: 1px solid #2a2a2a;
+}
+#logo_block {
+    background: #111111;
+    border-bottom: 1px solid #2a2a2a;
+}
+#logo_name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #f0f0f0;
+}
+#logo_sub {
+    font-size: 9px;
+    color: #f5c400;
+    letter-spacing: 2px;
+}
+
+QPushButton#nav {
+    background: transparent;
+    border-left: 3px solid transparent;
+    color: #888888;
+    text-align: left;
+    padding: 11px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 0px;
+}
+QPushButton#nav:hover {
+    background: #1a1a1a;
+    color: #f0f0f0;
+    border-left: 3px solid #444444;
+}
+QPushButton#nav[active=true] {
+    background: #1c1a00;
+    color: #f5c400;
+    border-left: 3px solid #f5c400;
+    font-weight: 700;
+}
+
+#content { background: #0d0d0d; }
+
+#page_header {
+    background: #161616;
+    border-bottom: 1px solid #2a2a2a;
+}
+#page_title {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f0f0f0;
+}
+#page_sub {
+    font-size: 11px;
+    color: #888888;
+}
+
+QFrame#card {
+    background: #181818;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+}
+
+QLineEdit {
+    background: #0a0a0a;
+    border: 1.5px solid #2a2a2a;
+    border-radius: 7px;
+    padding: 9px 14px;
+    color: #f0f0f0;
+    font-size: 13px;
+    selection-background-color: #f5c40055;
+}
+QLineEdit:focus {
+    border: 1.5px solid #f5c400;
+}
+
+QPushButton#primary {
+    background: #f5c400;
+    border-radius: 7px;
+    color: #0a0a0a;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 22px;
+}
+QPushButton#primary:hover { background: #ffd740; }
+QPushButton#primary:pressed { background: #c9a000; }
+QPushButton#primary:disabled { background: #2a2a00; color: #444444; }
+
+QPushButton#danger {
+    background: #e03c3c;
+    border-radius: 7px;
+    color: #f0f0f0;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 22px;
+}
+QPushButton#danger:hover { background: #ff5555; }
+QPushButton#danger:pressed { background: #a02020; }
+QPushButton#danger:disabled { background: #2a0000; color: #444444; }
+
+QPushButton#ghost {
+    background: transparent;
+    border: 1.5px solid #2a2a2a;
+    border-radius: 7px;
+    color: #888888;
+    font-size: 12px;
+    padding: 6px 14px;
+}
+QPushButton#ghost:hover {
+    border-color: #f5c400;
+    color: #f5c400;
+}
+
+QProgressBar {
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 5px;
+    height: 6px;
+    text-align: center;
+    color: transparent;
+}
+QProgressBar::chunk {
+    background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
+        stop:0 #f5c400, stop:1 #ffd740);
+    border-radius: 5px;
+}
+
+QTextEdit#console {
+    background: #050505;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    color: #e8d44d;
+    font-family: 'JetBrains Mono','Fira Code','Courier New',monospace;
+    font-size: 12px;
+    padding: 12px;
+    selection-background-color: #f5c40044;
+}
+
+QListWidget {
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    color: #cccccc;
+    font-size: 12px;
+    padding: 4px;
+}
+QListWidget::item {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border-bottom: 1px solid #1e1e1e;
+}
+QListWidget::item:hover { background: #1c1a00; color: #f0f0f0; }
+QListWidget::item:selected { background: #f5c40022; color: #f5c400; }
+
+#statusbar {
+    background: #080808;
+    border-top: 1px solid #1e1e1e;
+}
+
+QScrollBar:vertical {
+    background: #0d0d0d;
+    width: 7px;
+    border-radius: 3px;
+}
+QScrollBar::handle:vertical {
+    background: #2a2a2a;
+    border-radius: 3px;
+    min-height: 24px;
+}
+QScrollBar::handle:vertical:hover { background: #f5c400; }
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+QScrollBar:horizontal {
+    background: #0d0d0d;
+    height: 7px;
+    border-radius: 3px;
+}
+QScrollBar::handle:horizontal {
+    background: #2a2a2a;
+    border-radius: 3px;
+    min-width: 24px;
+}
+QScrollBar::handle:horizontal:hover { background: #f5c400; }
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }
+"""
+
+def make_logo(size=36):
+    px = QPixmap(size, size)
+    px.fill(Qt.GlobalColor.transparent)
+    p = QPainter(px)
+    p.setRenderHint(QPainter.RenderHint.Antialiasing)
+    p.setBrush(QBrush(QColor("#f5c400")))
+    p.setPen(Qt.PenStyle.NoPen)
+    p.drawEllipse(0, 0, size, size)
+    p.setPen(QPen(QColor("#0a0a0a")))
+    font = QFont("sans-serif", int(size * 0.42), QFont.Weight.Black)
+    p.setFont(font)
+    p.drawText(px.rect(), Qt.AlignmentFlag.AlignCenter, "P")
+    p.end()
+    return px
+
+
+class Toast(QFrame):
+    def __init__(self, parent, msg, ok=True):
+        super().__init__(parent)
+        self.setFixedSize(360, 48)
+        bg  = "#0d2a1a" if ok else "#2a0a0a"
+        bdr = "#1a5a30" if ok else "#5a1a1a"
+        col = "#3ddc84" if ok else "#ff5555"
+        ico = "checkmark" if ok else "x"
+        self.setStyleSheet(
+            f"background:{bg};border:1px solid {bdr};border-radius:9px;"
+        )
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(14, 0, 14, 0)
+        lay.setSpacing(10)
+        i = QLabel("OK" if ok else "ERR")
+        i.setStyleSheet(f"color:{col};font-size:11px;font-weight:bold;")
+        m = QLabel(msg)
+        m.setStyleSheet(f"color:{col};font-size:12px;font-weight:600;")
+        lay.addWidget(i)
+        lay.addWidget(m)
+        lay.addStretch()
+        sh = QGraphicsDropShadowEffect()
+        sh.setBlurRadius(24)
+        sh.setColor(QColor(0, 0, 0, 160))
+        sh.setOffset(0, 6)
+        self.setGraphicsEffect(sh)
+        self.move(parent.width() - self.width() - 20,
+                  parent.height() - self.height() - 56)
+        self.raise_()
+        self.show()
+        QTimer.singleShot(3200, self._out)
+
+    def _out(self):
+        self._a = QPropertyAnimation(self, b"windowOpacity")
+        self._a.setDuration(450)
+        self._a.setStartValue(1.0)
+        self._a.setEndValue(0.0)
+        self._a.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._a.finished.connect(self.deleteLater)
+        self._a.start()
+
+
+class Page(QWidget):
+    log  = pyqtSignal(str)
+    done = pyqtSignal(bool)
+
+    def __init__(self, t):
+        super().__init__()
+        self.t = t
+        self._proc = None
+
+    def _card(self):
+        f = QFrame()
+        f.setObjectName("card")
+        return f
+
+    def _run(self, apt_args, pbar=None, btn=None):
+        if self._proc and self._proc.state() == QProcess.ProcessState.Running:
+            return
+        if btn:  btn.setEnabled(False)
+        if pbar: pbar.setRange(0, 0)
+
+        self._proc = QProcess()
+        env = self._proc.processEnvironment()
+        env.insert("DEBIAN_FRONTEND", "noninteractive")
+        self._proc.setProcessEnvironment(env)
+
+        self._proc.readyReadStandardOutput.connect(
+            lambda: self.log.emit(
+                self._proc.readAllStandardOutput().data().decode(errors="replace")
+            )
+        )
+        self._proc.readyReadStandardError.connect(
+            lambda: self.log.emit(
+                self._proc.readAllStandardError().data().decode(errors="replace")
+            )
+        )
+
+        def _fin(code, _):
+            if pbar:
+                pbar.setRange(0, 100)
+                pbar.setValue(100 if code == 0 else 0)
+            if btn:
+                btn.setEnabled(True)
+            self.done.emit(code == 0)
+
+        self._proc.finished.connect(_fin)
+        self._proc.start("pkexec", ["apt"] + apt_args)
+
+
+class SearchPage(Page):
+    def __init__(self, t):
+        super().__init__(t)
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(28, 28, 28, 28)
+        lay.setSpacing(16)
+
+        c1 = self._card()
+        l1 = QVBoxLayout(c1)
+        l1.setContentsMargins(18, 18, 18, 18)
+        l1.setSpacing(10)
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        self.inp = QLineEdit()
+        self.inp.setPlaceholderText(t("search_placeholder"))
+        self.inp.setMinimumHeight(40)
+        self.btn = QPushButton(t("search_btn"))
+        self.btn.setObjectName("primary")
+        self.btn.setMinimumHeight(40)
+        self.btn.setFixedWidth(110)
+        row.addWidget(self.inp)
+        row.addWidget(self.btn)
+        self.pbar = QProgressBar()
+        self.pbar.setFixedHeight(5)
+        self.pbar.setVisible(False)
+        l1.addLayout(row)
+        l1.addWidget(self.pbar)
+        lay.addWidget(c1)
+
+        c2 = self._card()
+        l2 = QVBoxLayout(c2)
+        l2.setContentsMargins(18, 14, 18, 18)
+        l2.setSpacing(8)
+        self.res_lbl = QLabel(t("results_for"))
+        self.res_lbl.setStyleSheet("color:#444444;font-size:11px;")
+        self.lst = QListWidget()
+        self.lst.setMinimumHeight(260)
+        l2.addWidget(self.res_lbl)
+        l2.addWidget(self.lst)
+        lay.addWidget(c2)
+        lay.addStretch()
+
+        self.btn.clicked.connect(self._search)
+        self.inp.returnPressed.connect(self._search)
+
+    def _search(self):
+        pkg = self.inp.text().strip()
+        if not pkg:
+            return
+        self.lst.clear()
+        self.pbar.setVisible(True)
+        self.pbar.setRange(0, 0)
+        self.btn.setEnabled(False)
+        self.res_lbl.setText(f'{self.t("results_for")}  "{pkg}"')
+
+        self._proc = QProcess()
+        self._proc.readyReadStandardOutput.connect(
+            lambda: [
+                self.lst.addItem(ln.strip())
+                for ln in self._proc.readAllStandardOutput()
+                          .data().decode(errors="replace").splitlines()
+                if ln.strip()
+            ]
+        )
+        self._proc.readyReadStandardError.connect(
+            lambda: self.log.emit(
+                self._proc.readAllStandardError().data().decode(errors="replace")
+            )
+        )
+        def _fin(code, _):
+            self.pbar.setRange(0, 100)
+            self.pbar.setValue(100)
+            self.pbar.setVisible(False)
+            self.btn.setEnabled(True)
+            if self.lst.count() == 0:
+                self.lst.addItem(self.t("no_results"))
+            self.done.emit(code == 0)
+        self._proc.finished.connect(_fin)
+        self._proc.start("apt-cache", ["search", pkg])
+
+    def retranslate(self):
+        self.inp.setPlaceholderText(self.t("search_placeholder"))
+        self.btn.setText(self.t("search_btn"))
+        self.res_lbl.setText(self.t("results_for"))
+
+
+class InstallPage(Page):
+    def __init__(self, t):
+        super().__init__(t)
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(28, 28, 28, 28)
+        lay.setSpacing(16)
+        c = self._card()
+        cl = QVBoxLayout(c)
+        cl.setContentsMargins(20, 20, 20, 20)
+        cl.setSpacing(12)
+        self.cmd_lbl = QLabel("$  apt install -y  <package>")
+        self.cmd_lbl.setStyleSheet(
+            "color:#f5c400;font-family:monospace;font-size:11px;"
+            "background:#0f0f00;border:1px solid #2a2a00;"
+            "border-radius:5px;padding:6px 12px;"
+        )
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        self.inp = QLineEdit()
+        self.inp.setPlaceholderText(t("install_placeholder"))
+        self.inp.setMinimumHeight(40)
+        self.ibtn = QPushButton(t("install_btn"))
+        self.ibtn.setObjectName("primary")
+        self.ibtn.setMinimumHeight(40)
+        row.addWidget(self.inp)
+        row.addWidget(self.ibtn)
+        self.pbar = QProgressBar()
+        self.pbar.setFixedHeight(5)
+        self.pbar.setValue(0)
+        cl.addWidget(self.cmd_lbl)
+        cl.addLayout(row)
+        cl.addWidget(self.pbar)
+        lay.addWidget(c)
+        lay.addStretch()
+        self.ibtn.clicked.connect(self._install)
+        self.inp.returnPressed.connect(self._install)
+
+    def _install(self):
+        pkg = self.inp.text().strip()
+        if not pkg:
+            self.log.emit(f"[!] {self.t('pkg_required')}\n")
+            return
+        self.log.emit(f"\n[->] apt install -y {pkg}\n")
+        self._run(["install", "-y", pkg], pbar=self.pbar, btn=self.ibtn)
+
+    def retranslate(self):
+        self.inp.setPlaceholderText(self.t("install_placeholder"))
+        self.ibtn.setText(self.t("install_btn"))
+
+
+class RemovePage(Page):
+    def __init__(self, t):
+        super().__init__(t)
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(28, 28, 28, 28)
+        lay.setSpacing(16)
+        c = self._card()
+        cl = QVBoxLayout(c)
+        cl.setContentsMargins(20, 20, 20, 20)
+        cl.setSpacing(12)
+        self.cmd_lbl = QLabel("$  apt remove --autoremove --purge -y  <package>")
+        self.cmd_lbl.setStyleSheet(
+            "color:#ff5555;font-family:monospace;font-size:11px;"
+            "background:#1a0000;border:1px solid #3a0000;"
+            "border-radius:5px;padding:6px 12px;"
+        )
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        self.inp = QLineEdit()
+        self.inp.setPlaceholderText(t("remove_placeholder"))
+        self.inp.setMinimumHeight(40)
+        self.rbtn = QPushButton(t("remove_btn"))
+        self.rbtn.setObjectName("danger")
+        self.rbtn.setMinimumHeight(40)
+        row.addWidget(self.inp)
+        row.addWidget(self.rbtn)
+        self.pbar = QProgressBar()
+        self.pbar.setFixedHeight(5)
+        self.pbar.setValue(0)
+        cl.addWidget(self.cmd_lbl)
+        cl.addLayout(row)
+        cl.addWidget(self.pbar)
+        lay.addWidget(c)
+        lay.addStretch()
+        self.rbtn.clicked.connect(self._remove)
+        self.inp.returnPressed.connect(self._remove)
+
+    def _remove(self):
+        pkg = self.inp.text().strip()
+        if not pkg:
+            self.log.emit(f"[!] {self.t('pkg_required')}\n")
+            return
+        dlg = QDialog(self)
+        dlg.setWindowTitle(self.t("confirm_remove"))
+        dlg.setStyleSheet("QDialog{background:#181818;}QLabel{color:#f0f0f0;}")
+        dlg.setMinimumWidth(320)
+        vl = QVBoxLayout(dlg)
+        vl.setSpacing(16)
+        vl.setContentsMargins(22, 22, 22, 16)
+        lbl = QLabel(f"{self.t('confirm_remove')}\n{pkg}")
+        lbl.setStyleSheet("color:#f0f0f0;font-size:14px;")
+        vl.addWidget(lbl)
+        btns = QHBoxLayout()
+        btns.setSpacing(10)
+        yes = QPushButton(self.t("confirm_yes"))
+        yes.setObjectName("danger")
+        no  = QPushButton(self.t("confirm_no"))
+        no.setObjectName("ghost")
+        btns.addStretch()
+        btns.addWidget(no)
+        btns.addWidget(yes)
+        vl.addLayout(btns)
+        yes.clicked.connect(dlg.accept)
+        no.clicked.connect(dlg.reject)
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+        self.log.emit(f"\n[->] apt remove --autoremove --purge -y {pkg}\n")
+        self._run(["remove", "--autoremove", "--purge", "-y", pkg],
+                  pbar=self.pbar, btn=self.rbtn)
+
+    def retranslate(self):
+        self.inp.setPlaceholderText(self.t("remove_placeholder"))
+        self.rbtn.setText(self.t("remove_btn"))
+
+
+class UpdatePage(Page):
+    def __init__(self, t):
+        super().__init__(t)
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(28, 28, 28, 28)
+        lay.setSpacing(16)
+        c = self._card()
+        cl = QVBoxLayout(c)
+        cl.setContentsMargins(22, 22, 22, 22)
+        cl.setSpacing(14)
+        self.title = QLabel(t("update_title"))
+        self.title.setStyleSheet("font-size:16px;font-weight:700;color:#f0f0f0;")
+        self.desc = QLabel(t("update_desc"))
+        self.desc.setStyleSheet("color:#888888;font-size:12px;")
+        self.desc.setWordWrap(True)
+        cmd = QLabel("$  apt update")
+        cmd.setStyleSheet(
+            "color:#f5c400;font-family:monospace;font-size:11px;"
+            "background:#0f0f00;border:1px solid #2a2a00;"
+            "border-radius:5px;padding:6px 12px;"
+        )
+        self.run_btn = QPushButton(t("update_btn"))
+        self.run_btn.setObjectName("primary")
+        self.run_btn.setMinimumHeight(42)
+        self.run_btn.setFixedWidth(200)
+        self.pbar = QProgressBar()
+        self.pbar.setFixedHeight(6)
+        self.pbar.setValue(0)
+        cl.addWidget(self.title)
+        cl.addWidget(self.desc)
+        cl.addWidget(cmd)
+        cl.addSpacing(4)
+        cl.addWidget(self.run_btn, alignment=Qt.AlignmentFlag.AlignLeft)
+        cl.addWidget(self.pbar)
+        lay.addWidget(c)
+        lay.addStretch()
+        self.run_btn.clicked.connect(self._update)
+
+    def _update(self):
+        self.log.emit("\n[->] apt update\n")
+        self._run(["update"], pbar=self.pbar, btn=self.run_btn)
+
+    def retranslate(self):
+        self.title.setText(self.t("update_title"))
+        self.desc.setText(self.t("update_desc"))
+        self.run_btn.setText(self.t("update_btn"))
+
+
+class UpgradePage(Page):
+    def __init__(self, t):
+        super().__init__(t)
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(28, 28, 28, 28)
+        lay.setSpacing(16)
+        c = self._card()
+        cl = QVBoxLayout(c)
+        cl.setContentsMargins(22, 22, 22, 22)
+        cl.setSpacing(14)
+        self.title = QLabel(t("upgrade_title"))
+        self.title.setStyleSheet("font-size:16px;font-weight:700;color:#f0f0f0;")
+        self.desc = QLabel(t("upgrade_desc"))
+        self.desc.setStyleSheet("color:#888888;font-size:12px;")
+        self.desc.setWordWrap(True)
+        cmd = QLabel("$  apt upgrade -y")
+        cmd.setStyleSheet(
+            "color:#f5c400;font-family:monospace;font-size:11px;"
+            "background:#0f0f00;border:1px solid #2a2a00;"
+            "border-radius:5px;padding:6px 12px;"
+        )
+        self.run_btn = QPushButton(t("upgrade_btn"))
+        self.run_btn.setObjectName("primary")
+        self.run_btn.setMinimumHeight(42)
+        self.run_btn.setFixedWidth(220)
+        self.pbar = QProgressBar()
+        self.pbar.setFixedHeight(6)
+        self.pbar.setValue(0)
+        cl.addWidget(self.title)
+        cl.addWidget(self.desc)
+        cl.addWidget(cmd)
+        cl.addSpacing(4)
+        cl.addWidget(self.run_btn, alignment=Qt.AlignmentFlag.AlignLeft)
+        cl.addWidget(self.pbar)
+        lay.addWidget(c)
+        lay.addStretch()
+        self.run_btn.clicked.connect(self._upgrade)
+
+    def _upgrade(self):
+        self.log.emit("\n[->] apt upgrade -y\n")
+        self._run(["upgrade", "-y"], pbar=self.pbar, btn=self.run_btn)
+
+    def retranslate(self):
+        self.title.setText(self.t("upgrade_title"))
+        self.desc.setText(self.t("upgrade_desc"))
+        self.run_btn.setText(self.t("upgrade_btn"))
+
+
+class ConsolePage(QWidget):
+    def __init__(self, t, console):
+        super().__init__()
+        self.t = t
+        self.con = console
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(28, 28, 28, 28)
+        lay.setSpacing(10)
+        top = QHBoxLayout()
+        self.ttl = QLabel(t("console_title"))
+        self.ttl.setStyleSheet("font-size:15px;font-weight:700;color:#f0f0f0;")
+        self.clr = QPushButton(t("console_clear"))
+        self.clr.setObjectName("ghost")
+        self.cpy = QPushButton(t("console_copy"))
+        self.cpy.setObjectName("ghost")
+        top.addWidget(self.ttl)
+        top.addStretch()
+        top.addWidget(self.cpy)
+        top.addWidget(self.clr)
+        lay.addLayout(top)
+        lay.addWidget(self.con)
+        self.clr.clicked.connect(self.con.clear)
+        self.cpy.clicked.connect(
+            lambda: QApplication.clipboard().setText(self.con.toPlainText())
+        )
+
+    def retranslate(self):
+        self.ttl.setText(self.t("console_title"))
+        self.clr.setText(self.t("console_clear"))
+        self.cpy.setText(self.t("console_copy"))
+
+
+NAV_KEYS = [
+    ("nav_search",  "Search"),
+    ("nav_install", "Install"),
+    ("nav_remove",  "Remove"),
+    ("nav_update",  "Update"),
+    ("nav_upgrade", "Upgrade"),
+    ("nav_console", "Console"),
+]
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self._lang = "TR"
+        self.setWindowTitle(self.t("app_title"))
+        self.setMinimumSize(960, 600)
+        self.resize(1080, 680)
+        self.setStyleSheet(QSS)
+        self._build()
+        self._wire()
+        self._console.insertPlainText(
+            "===========================================\n"
+	    "                                    Pardus   Package   Manager\n"
+            "===========================================\n"
+            "Hazır / Ready.\n\n"
+        )
+
+    def t(self, key):
+        return TR[self._lang].get(key, key)
+
+    def _build(self):
+        root_w = QWidget()
+        self.setCentralWidget(root_w)
+        root = QHBoxLayout(root_w)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
+        # SIDEBAR
+        sb_w = QWidget()
+        sb_w.setObjectName("sidebar")
+        sb_w.setFixedWidth(188)
+        sb = QVBoxLayout(sb_w)
+        sb.setContentsMargins(0, 0, 0, 0)
+        sb.setSpacing(0)
+
+        logo_block = QWidget()
+        logo_block.setObjectName("logo_block")
+        logo_block.setFixedHeight(76)
+        lb = QHBoxLayout(logo_block)
+        lb.setContentsMargins(16, 0, 16, 0)
+        lb.setSpacing(12)
+        icon_lbl = QLabel()
+        icon_lbl.setPixmap(make_logo(34))
+        icon_lbl.setFixedSize(34, 34)
+        tc = QVBoxLayout()
+        tc.setSpacing(1)
+        n = QLabel("Pardus")
+        n.setObjectName("logo_name")
+        s = QLabel("PKG MGR")
+        s.setObjectName("logo_sub")
+        tc.addWidget(n)
+        tc.addWidget(s)
+        lb.addWidget(icon_lbl)
+        lb.addLayout(tc)
+        sb.addWidget(logo_block)
+
+        self._nav_btns: dict[str, QPushButton] = {}
+        for key, _ in NAV_KEYS:
+            btn = QPushButton(self.t(key))
+            btn.setObjectName("nav")
+            btn.setProperty("active", False)
+            btn.setMinimumHeight(44)
+            self._nav_btns[key] = btn
+            sb.addWidget(btn)
+
+        sb.addStretch()
+
+        self._lang_btn = QPushButton(self.t("lang_toggle"))
+        self._lang_btn.setObjectName("ghost")
+        self._lang_btn.setFixedHeight(32)
+        lw = QWidget()
+        lwl = QVBoxLayout(lw)
+        lwl.setContentsMargins(14, 8, 14, 12)
+        lwl.addWidget(self._lang_btn)
+        sb.addWidget(lw)
+
+        root.addWidget(sb_w)
+
+        # RIGHT
+        rw = QWidget()
+        rw.setObjectName("content")
+        rl = QVBoxLayout(rw)
+        rl.setContentsMargins(0, 0, 0, 0)
+        rl.setSpacing(0)
+
+        hdr = QWidget()
+        hdr.setObjectName("page_header")
+        hdr.setFixedHeight(64)
+        hdrl = QVBoxLayout(hdr)
+        hdrl.setContentsMargins(28, 10, 28, 10)
+        hdrl.setSpacing(2)
+        self._page_title = QLabel()
+        self._page_title.setObjectName("page_title")
+        self._page_sub = QLabel()
+        self._page_sub.setObjectName("page_sub")
+        hdrl.addWidget(self._page_title)
+        hdrl.addWidget(self._page_sub)
+        rl.addWidget(hdr)
+
+        self._console = QTextEdit()
+        self._console.setObjectName("console")
+        self._console.setReadOnly(True)
+        self._console.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+
+        self._stack = QStackedWidget()
+        self._pages: dict[str, QWidget] = {
+            "nav_search":  SearchPage(self.t),
+            "nav_install": InstallPage(self.t),
+            "nav_remove":  RemovePage(self.t),
+            "nav_update":  UpdatePage(self.t),
+            "nav_upgrade": UpgradePage(self.t),
+            "nav_console": ConsolePage(self.t, self._console),
+        }
+        for pg in self._pages.values():
+            self._stack.addWidget(pg)
+        rl.addWidget(self._stack)
+
+        stat = QWidget()
+        stat.setObjectName("statusbar")
+        stat.setFixedHeight(26)
+        stl = QHBoxLayout(stat)
+        stl.setContentsMargins(20, 0, 20, 0)
+        self._status = QLabel(self.t("status_ready"))
+        self._status.setStyleSheet("color:#f5c400;font-size:11px;font-weight:600;")
+        ver = QLabel("")
+        ver.setStyleSheet("color:#444444;font-size:10px;")
+        stl.addWidget(self._status)
+        stl.addStretch()
+        stl.addWidget(ver)
+        rl.addWidget(stat)
+
+        root.addWidget(rw)
+
+        for key, btn in self._nav_btns.items():
+            btn.clicked.connect(lambda _, k=key: self._goto(k))
+        self._lang_btn.clicked.connect(self._flip)
+        self._goto("nav_search")
+
+    def _wire(self):
+        for pg in self._pages.values():
+            if isinstance(pg, Page):
+                pg.log.connect(self._log)
+                pg.done.connect(self._on_done)
+
+    def _goto(self, key):
+        for k, btn in self._nav_btns.items():
+            active = (k == key)
+            btn.setProperty("active", active)
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+        self._stack.setCurrentWidget(self._pages[key])
+        self._page_title.setText(self.t(key))
+        self._page_sub.setText("")
+
+    def _log(self, text):
+        cur = self._console.textCursor()
+        cur.movePosition(QTextCursor.MoveOperation.End)
+        self._console.setTextCursor(cur)
+        self._console.insertPlainText(text)
+        self._console.ensureCursorVisible()
+        self._status.setText(self.t("status_running"))
+        self._status.setStyleSheet("color:#f5c400;font-size:11px;font-weight:600;")
+
+    def _on_done(self, ok):
+        col = "#3ddc84" if ok else "#ff5555"
+        self._status.setText(self.t("status_done" if ok else "status_error"))
+        self._status.setStyleSheet(f"color:{col};font-size:11px;font-weight:600;")
+        Toast(self, self.t("toast_ok" if ok else "toast_err"), ok=ok)
+        QTimer.singleShot(4000, lambda: (
+            self._status.setText(self.t("status_ready")),
+            self._status.setStyleSheet(
+                "color:#f5c400;font-size:11px;font-weight:600;"
+            ),
+        ))
+
+    def _flip(self):
+        self._lang = "EN" if self._lang == "TR" else "TR"
+        self.setWindowTitle(self.t("app_title"))
+        self._lang_btn.setText(self.t("lang_toggle"))
+        for key, btn in self._nav_btns.items():
+            btn.setText(self.t(key))
+        for pg in self._pages.values():
+            if hasattr(pg, "retranslate"):
+                pg.retranslate()
+        cur = [k for k, p in self._pages.items() if p is self._stack.currentWidget()]
+        if cur:
+            self._page_title.setText(self.t(cur[0]))
+
+
+def main():
+    app = QApplication(sys.argv)
+    app.setApplicationName("Pardus Pkg Mgr")
+    w = MainWindow()
+    w.show()
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()

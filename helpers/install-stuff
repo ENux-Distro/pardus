@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ "$(id -u)" -eq 0 ]; then
+  echo
+else
+  echo "Please run as root | Root olarak çalıştırınız"
+fi
+
+apt install -y python3-pyqt6 python3

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+APT="/usr/bin/apt"
+
+case "$1" in
+  "" )
+    /usr/bin/pardus-gui
+    ;;
+
+  --tui )
+    bash /usr/bin/pardus-tui
+    ;;
+  --gui )
+    /usr/bin/pardus-gui
+    ;;
+
+  --about )
+    echo "Pardus Paket Yöneticisi"
+    echo "Basit Komutlar:"
+    echo "install - İstediğiniz paketi indirir"
+    echo "remove - İstediğiniz paketi siler"
+    echo "update - Güncelleme yapar"
+    echo "upgrade - Paket versionlarını artırır"
+    echo 
+    echo "Ek seçenekler:"
+    echo "--tui: Pardus Paket Yöneticisinin metin kullanıcı arayüzü (TUI) olan versiyonunu çalıştırır"
+    echo "--gui: Pardus Paket Yöneticisinin grafik kullanıcı arayüzü (GUI) olan versiyonunu çalıştırır"
+    echo "Not: Eğer terminalde sadece pardus yazarsanız Pardus Paket Yöneticisinin GUI olan versiyonunu çalıştırır"
+    echo
+    exit 0
+    ;;
+
+
+  # Commands that DO NOT require sudo
+  search|show|list )
+    "$APT" "$@"
+    ;;
+
+  # Commands that DO require sudo
+  install|remove|purge|update|upgrade|full-upgrade|autoremove )
+    if [ "$EUID" -ne 0 ]; then echo "Root olarak çalıştırınız"; exit 1; fi
+    "$APT" "$@"
+    ;;
+
+  * )
+    "$APT" "$@"
+    ;;
+esac
