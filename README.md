@@ -1,41 +1,130 @@
 # Pardus Package Manager
 
-In order to install the Pardus Package Manager on your Pardus system, you need to these steps:
+Pardus Package Manager is a beginner-friendly package manager frontend made for the Pardus Linux distribution.
 
-- Git clone the repo via `sudo apt install git && git clone --depth 1 https://github.com/ENux-Distro/pardus.git`
+It provides:
+- A GUI mode for beginners
+- A TUI mode for intermediate users
+- A CLI mode for advanced users
 
-- Change your current directory to the repo's directory via `cd /path/to/pardus`
+Under the hood, it uses the `apt` package manager while adding:
+- A more user-friendly experience
+- Turkish-focused design choices
+- Pardus branding and integration
+- Easier package management for new Linux users
 
-- Install the Pardus Package Manager to your system via `make install`
+The goal of this project is to make package management on Pardus simpler, more accessible, and more welcoming for Turkish users.
 
-- Optionally, run `make desktop` to have a desktop shortcut for you to double-click on
+---
 
-After everything went succesfully, you now have installed the Pardus Package Manager to Pardus
+# Features
 
-## How to Use the Pardus Package Manager
+- Beginner-friendly graphical interface
+- Terminal user interface (TUI)
+- Traditional command-line interface (CLI)
+- Support for both Turkish and English
+- Uses `apt` underneath for compatibility and stability
+- Lightweight and simple
+- Desktop shortcut support
+- Designed specifically for Pardus users
 
-**1: The GUI Method (Recommended for beginners)**
+---
 
-- Run **pardus** on the terminal, or with our desktop shortcut.
+# Installation
 
-- Choose your operation.
+## 1. Install Git
 
-- On install and remove, it'll ask for a package, type it.
+```bash
+sudo apt install git
+```
 
-- Let the package manager do its thing.
+## 2. Clone the Repository
 
-**2: The TUI Method (Recommended for intermediates)**
+```bash
+git clone --depth 1 https://github.com/ENux-Distro/pardus.git
+```
 
-- Run **pardus --tui** on the terminal, or with our desktop shortcut.
+## 3. Enter the Repository
 
-- Choose your operation.
+```bash
+cd pardus
+```
 
-- On install and remove, it'll ask for a package, type it.
+## 4. Install Pardus Package Manager
 
-- Let the package manager do its thing.
+```bash
+make install
+```
 
-**2: The CLI Method (Recommended for experts)**
+## 5. (Optional) Add Desktop Shortcut
 
-- Run **pardus** **[operation]** **[package]** on the terminal
+```bash
+make desktop
+```
 
-- Let the package manager do its thing
+After installation, the package manager will be available system-wide.
+
+---
+
+# Usage
+
+## GUI Mode (Recommended for Beginners)
+
+Launch the graphical interface:
+
+```bash
+pardus
+```
+
+You can:
+- Install packages
+- Remove packages
+- Update packages
+- Manage software visually
+
+---
+
+## TUI Mode (Recommended for Intermediate Users)
+
+Launch the terminal interface:
+
+```bash
+pardus --tui
+```
+
+This mode provides a keyboard-driven interface inside the terminal.
+
+---
+
+## CLI Mode (Recommended for Advanced Users)
+
+Use commands directly from the terminal:
+
+```bash
+pardus [operation] [package]
+```
+
+Example:
+
+```bash
+pardus install fastfetch
+```
+
+---
+
+# Why This Project Exists
+
+Many new Linux users find traditional package managers intimidating.
+
+Pardus Package Manager aims to:
+- Make package management easier
+- Improve accessibility for beginners
+- Add a more modern experience to Pardus
+- Provide Turkish and English support
+- Keep the reliability of `apt` while improving usability
+
+---
+
+# License
+
+This project is open source and available under the GNU GPL-v3 License
