@@ -15,17 +15,17 @@ case "$1" in
     ;;
 
   --about )
-    echo "Pardus Paket Yöneticisi"
-    echo "Basit Komutlar:"
-    echo "install - İstediğiniz paketi indirir"
-    echo "remove - İstediğiniz paketi siler"
-    echo "update - Güncelleme yapar"
-    echo "upgrade - Paket versionlarını artırır"
-    echo 
-    echo "Ek seçenekler:"
-    echo "--tui: Pardus Paket Yöneticisinin metin kullanıcı arayüzü (TUI) olan versiyonunu çalıştırır"
-    echo "--gui: Pardus Paket Yöneticisinin grafik kullanıcı arayüzü (GUI) olan versiyonunu çalıştırır"
-    echo "Not: Eğer terminalde sadece pardus yazarsanız Pardus Paket Yöneticisinin GUI olan versiyonunu çalıştırır"
+    echo "Pardus Package Manager"
+    echo "Basic Commands:"
+    echo "install - Installs the package you want"
+    echo "remove - Removes the package you want"
+    echo "update - Updates the package lists"
+    echo "upgrade - Upgrades package versions"
+    echo
+    echo "Additional options:"
+    echo "--tui: Runs the text user interface (TUI) version of Pardus Package Manager"
+    echo "--gui: Runs the graphical user interface (GUI) version of Pardus Package Manager"
+    echo "Note: Running pardus with no arguments in a terminal runs the GUI version of Pardus Package Manager"
     echo
     exit 0
     ;;
@@ -38,7 +38,7 @@ case "$1" in
 
   # Commands that DO require sudo
   install|remove|purge|update|upgrade|full-upgrade|autoremove )
-    if [ "$EUID" -ne 0 ]; then echo "Root olarak çalıştırınız"; exit 1; fi
+    if [ "$EUID" -ne 0 ]; then echo "Please run as root"; exit 1; fi
     "$APT" "$@"
     ;;
 

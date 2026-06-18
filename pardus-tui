@@ -3,34 +3,14 @@
 APT="/usr/bin/apt"
 TITLE="Pardus Package Manager"
 
-# --- Language Selection ---
-LANGUAGE=$(whiptail --title "$TITLE" --menu "Select Language / Dil Seçiniz" 15 60 2 \
-"EN" "English" \
-"TR" "Türkçe" \
-3>&1 1>&2 2>&3)
-
-[ $? -ne 0 ] && exit 0
-
-# --- Texts Based on Language ---
-if [ "$LANGUAGE" = "TR" ]; then
-    MENU_TEXT="Yapmak istediğiniz işlemi seçin:"
-    INSTALL="Seçtiğiniz paketi sisteminize kurar"
-    REMOVE="Seçtiğiniz paketi sisteminizden kaldırır"
-    UPDATE="Sistemi günceller"
-    UPGRADE="Sistemi yükseltir"
-    SEARCH="Seçtiğiniz paketi arar"
-    EXIT="Çıkış yapar"
-    PKG_TEXT="Paket adını girin:"
-else
-    MENU_TEXT="Select operation:"
-    INSTALL="Install's your desired package"
-    REMOVE="Remove's your desired package"
-    UPDATE="Update's the system"
-    UPGRADE="Upgrade's the system "
-    SEARCH="Search's for your desired package"
-    EXIT="Exits"
-    PKG_TEXT="Enter package name:"
-fi
+MENU_TEXT="Select operation:"
+INSTALL="Install's your desired package"
+REMOVE="Remove's your desired package"
+UPDATE="Update's the system"
+UPGRADE="Upgrade's the system "
+SEARCH="Search's for your desired package"
+EXIT="Exits"
+PKG_TEXT="Enter package name:"
 
 # --- Main Menu ---
 CHOICE=$(whiptail --title "$TITLE" --menu "$MENU_TEXT" 20 70 6 \
@@ -66,31 +46,19 @@ sleep 1
 case "$CHOICE" in
     install)
 	if [ "$EUID" -ne 0 ]; then
-	    if [ "$LANGUAGE" = "TR" ]; then
-                echo "Dikkat: Bu operasyon için root olmanız gerek"
-                echo "Lütfen root olarak çalıştırınız"
-                exit 1
-            else
-                echo "Warning: For this operation, you must be root"
-                echo "Please be root"
-                exit 1
-	    fi
-	else 	
+            echo "Warning: For this operation, you must be root"
+            echo "Please be root"
+            exit 1
+	else
           $APT install -y "$PACKAGE"
 		  sleep 2
 	fi
         ;;
-    remove)     
+    remove)
         if [ "$EUID" -ne 0 ]; then
-            if [ "$LANGUAGE" = "TR" ]; then
-                echo "Dikkat: Bu operasyon için root olmanız gerek"
-                echo "Lütfen root olarak çalıştırınız"
-                exit 1
-            else
-                echo "Warning: For this operation, you must be root"
-                echo "Please be root"
-                exit 1
-            fi
+            echo "Warning: For this operation, you must be root"
+            echo "Please be root"
+            exit 1
         else
             $APT remove --autoremove --purge -y "$PACKAGE"
 			sleep 1
@@ -98,15 +66,9 @@ case "$CHOICE" in
         ;;
     update)
         if [ "$EUID" -ne 0 ]; then
-            if [ "$LANGUAGE" = "TR" ]; then
-                echo "Dikkat: Bu operasyon için root olmanız gerek"
-                echo "Lütfen root olarak çalıştırınız"
-                exit 1
-            else
-                echo "Warning: For this operation, you must be root"
-                echo "Please be root"
-                exit 1
-            fi
+            echo "Warning: For this operation, you must be root"
+            echo "Please be root"
+            exit 1
         else
             $APT update
 			sleep 1
@@ -114,15 +76,9 @@ case "$CHOICE" in
 	;;
     upgrade)
         if [ "$EUID" -ne 0 ]; then
-            if [ "$LANGUAGE" = "TR" ]; then
-                echo "Dikkat: Bu operasyon için root olmanız gerek"
-                echo "Lütfen root olarak çalıştırınız"
-                exit 1
-            else
-                echo "Warning: For this operation, you must be root"
-                echo "Please be root"
-                exit 1
-            fi
+            echo "Warning: For this operation, you must be root"
+            echo "Please be root"
+            exit 1
         else
 	        $APT upgrade -y
 		sleep 1
