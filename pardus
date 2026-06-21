@@ -2,6 +2,13 @@
 
 APT="/usr/bin/apt"
 
+# --- Locale Detection ---
+LOCALE_STR="${LC_ALL:-${LC_MESSAGES:-${LANG:-en_US}}}"
+case "$LOCALE_STR" in
+    tr*|TR*) LANGUAGE="TR" ;;
+    *)       LANGUAGE="EN" ;;
+esac
+
 case "$1" in
   "" )
     /usr/bin/pardus-gui
@@ -15,18 +22,33 @@ case "$1" in
     ;;
 
   --about )
-    echo "Pardus Package Manager"
-    echo "Basic Commands:"
-    echo "install - Installs the package you want"
-    echo "remove - Removes the package you want"
-    echo "update - Updates the package lists"
-    echo "upgrade - Upgrades package versions"
-    echo
-    echo "Additional options:"
-    echo "--tui: Runs the text user interface (TUI) version of Pardus Package Manager"
-    echo "--gui: Runs the graphical user interface (GUI) version of Pardus Package Manager"
-    echo "Note: Running pardus with no arguments in a terminal runs the GUI version of Pardus Package Manager"
-    echo
+    if [ "$LANGUAGE" = "TR" ]; then
+        echo "Pardus Paket Yöneticisi"
+        echo "Basit Komutlar:"
+        echo "install - İstediğiniz paketi kurar"
+        echo "remove - İstediğiniz paketi kaldırır"
+        echo "update - Paket listelerini günceller"
+        echo "upgrade - Paket versiyonlarını yükseltir"
+        echo
+        echo "Ek seçenekler:"
+        echo "--tui: Pardus Paket Yöneticisinin metin kullanıcı arayüzü (TUI) sürümünü çalıştırır"
+        echo "--gui: Pardus Paket Yöneticisinin grafik kullanıcı arayüzü (GUI) sürümünü çalıştırır"
+        echo "Not: Terminalde argümansız pardus yazmak, Pardus Paket Yöneticisinin GUI sürümünü çalıştırır"
+        echo
+    else
+        echo "Pardus Package Manager"
+        echo "Basic Commands:"
+        echo "install - Installs the package you want"
+        echo "remove - Removes the package you want"
+        echo "update - Updates the package lists"
+        echo "upgrade - Upgrades package versions"
+        echo
+        echo "Additional options:"
+        echo "--tui: Runs the text user interface (TUI) version of Pardus Package Manager"
+        echo "--gui: Runs the graphical user interface (GUI) version of Pardus Package Manager"
+        echo "Note: Running pardus with no arguments in a terminal runs the GUI version of Pardus Package Manager"
+        echo
+    fi
     exit 0
     ;;
 
@@ -38,7 +60,14 @@ case "$1" in
 
   # Commands that DO require sudo
   install|remove|purge|update|upgrade|full-upgrade|autoremove )
-    if [ "$EUID" -ne 0 ]; then echo "Please run as root"; exit 1; fi
+    if [ "$EUID" -ne 0 ]; then
+        if [ "$LANGUAGE" = "TR" ]; then
+            echo "Lütfen root olarak çalıştırınız"
+        else
+            echo "Please run as root"
+        fi
+        exit 1
+    fi
     "$APT" "$@"
     ;;
 

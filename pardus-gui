@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
+import locale
+import os
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QLineEdit, QTextEdit, QProgressBar,
@@ -28,7 +30,7 @@ C_RED2    = "#ff5555"
 C_GREEN   = "#3ddc84"
 C_DARKRED = "#2a0a0a"
 
-STR = {
+EN = {
     "app_title":          "Pardus Package Manager",
     "nav_search":         "Search",
     "nav_install":        "Install",
@@ -70,6 +72,66 @@ STR = {
     "nav_upgrade_sub":    "Upgrade everything to the latest version",
     "nav_console_sub":    "Raw pardus output",
 }
+
+TR = {
+    "app_title":          "Pardus Paket Yöneticisi",
+    "nav_search":         "Ara",
+    "nav_install":        "Kur",
+    "nav_remove":         "Kaldır",
+    "nav_update":         "Güncelle",
+    "nav_upgrade":        "Yükselt",
+    "nav_console":        "Konsol",
+    "search_placeholder": "Paket ara...",
+    "search_btn":         "Ara",
+    "install_placeholder":"Kurulacak paket adı...",
+    "install_btn":        "Paketi Kur",
+    "remove_placeholder": "Kaldırılacak paket adı...",
+    "remove_btn":         "Paketi Kaldır",
+    "update_title":       "Paket Listelerini Güncelle",
+    "update_desc":        "Tüm yapılandırılmış depolardan güncel paket indeksini çeker.",
+    "update_btn":         "pardus update çalıştır",
+    "upgrade_title":      "Tüm Paketleri Yükselt",
+    "upgrade_desc":       "Kurulu tüm paketleri mevcut en son sürümlere yükseltir.",
+    "upgrade_btn":        "pardus upgrade çalıştır",
+    "console_title":      "Konsol Çıktısı",
+    "console_clear":      "Temizle",
+    "console_copy":       "Tümünü Kopyala",
+    "status_ready":       "Hazır",
+    "status_running":     "Çalışıyor...",
+    "status_done":        "Tamamlandı",
+    "status_error":       "Hata",
+    "results_for":        "Sonuçlar",
+    "no_results":         "Paket bulunamadı.",
+    "toast_ok":           "İşlem başarıyla tamamlandı.",
+    "toast_err":          "İşlem başarısız. Konsola bakın.",
+    "confirm_remove":     "Paket kaldırılsın mı?",
+    "confirm_yes":        "Evet, Kaldır",
+    "confirm_no":         "İptal",
+    "pkg_required":       "Lütfen bir paket adı girin.",
+    "nav_search_sub":     "Depolarınızdaki paketleri arayın",
+    "nav_install_sub":    "Ada göre bir paket kurun",
+    "nav_remove_sub":     "Kurulu bir paketi kaldırın",
+    "nav_update_sub":     "Paket indeksini yenileyin",
+    "nav_upgrade_sub":    "Her şeyi en son sürüme yükseltin",
+    "nav_console_sub":    "Ham pardus çıktısı",
+}
+
+
+def detect_lang():
+    for var in ("LC_ALL", "LC_MESSAGES", "LANG", "LANGUAGE"):
+        val = os.environ.get(var)
+        if val and val.lower().startswith("tr"):
+            return "TR"
+    try:
+        loc = locale.setlocale(locale.LC_MESSAGES, "")
+    except locale.Error:
+        loc = ""
+    if loc.lower().startswith("tr"):
+        return "TR"
+    return "EN"
+
+
+STR = TR if detect_lang() == "TR" else EN
 
 QSS = """
 * {
@@ -705,7 +767,7 @@ class MainWindow(QMainWindow):
             "===========================================\n"
             "          Pardus Package Manager\n"
             "===========================================\n"
-            "Ready.\n\n"
+            f"{self.t('status_ready')}.\n\n"
         )
 
     def t(self, key):

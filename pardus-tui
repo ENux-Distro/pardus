@@ -3,14 +3,36 @@
 APT="/usr/bin/apt"
 TITLE="Pardus Package Manager"
 
-MENU_TEXT="Select operation:"
-INSTALL="Install's your desired package"
-REMOVE="Remove's your desired package"
-UPDATE="Update's the system"
-UPGRADE="Upgrade's the system "
-SEARCH="Search's for your desired package"
-EXIT="Exits"
-PKG_TEXT="Enter package name:"
+# --- Locale Detection ---
+LOCALE_STR="${LC_ALL:-${LC_MESSAGES:-${LANG:-en_US}}}"
+case "$LOCALE_STR" in
+    tr*|TR*) LANGUAGE="TR" ;;
+    *)       LANGUAGE="EN" ;;
+esac
+
+if [ "$LANGUAGE" = "TR" ]; then
+    MENU_TEXT="Yapmak istediğiniz işlemi seçin:"
+    INSTALL="Seçtiğiniz paketi sisteminize kurar"
+    REMOVE="Seçtiğiniz paketi sisteminizden kaldırır"
+    UPDATE="Sistemi günceller"
+    UPGRADE="Sistemi yükseltir"
+    SEARCH="Seçtiğiniz paketi arar"
+    EXIT="Çıkış yapar"
+    PKG_TEXT="Paket adını girin:"
+    ROOT_WARN1="Dikkat: Bu işlem için root olmanız gerekir"
+    ROOT_WARN2="Lütfen root olarak çalıştırınız"
+else
+    MENU_TEXT="Select operation:"
+    INSTALL="Install's your desired package"
+    REMOVE="Remove's your desired package"
+    UPDATE="Update's the system"
+    UPGRADE="Upgrade's the system "
+    SEARCH="Search's for your desired package"
+    EXIT="Exits"
+    PKG_TEXT="Enter package name:"
+    ROOT_WARN1="Warning: For this operation, you must be root"
+    ROOT_WARN2="Please be root"
+fi
 
 # --- Main Menu ---
 CHOICE=$(whiptail --title "$TITLE" --menu "$MENU_TEXT" 20 70 6 \
@@ -46,8 +68,8 @@ sleep 1
 case "$CHOICE" in
     install)
 	if [ "$EUID" -ne 0 ]; then
-            echo "Warning: For this operation, you must be root"
-            echo "Please be root"
+            echo "$ROOT_WARN1"
+            echo "$ROOT_WARN2"
             exit 1
 	else
           $APT install -y "$PACKAGE"
@@ -56,8 +78,8 @@ case "$CHOICE" in
         ;;
     remove)
         if [ "$EUID" -ne 0 ]; then
-            echo "Warning: For this operation, you must be root"
-            echo "Please be root"
+            echo "$ROOT_WARN1"
+            echo "$ROOT_WARN2"
             exit 1
         else
             $APT remove --autoremove --purge -y "$PACKAGE"
@@ -66,8 +88,8 @@ case "$CHOICE" in
         ;;
     update)
         if [ "$EUID" -ne 0 ]; then
-            echo "Warning: For this operation, you must be root"
-            echo "Please be root"
+            echo "$ROOT_WARN1"
+            echo "$ROOT_WARN2"
             exit 1
         else
             $APT update
@@ -76,8 +98,8 @@ case "$CHOICE" in
 	;;
     upgrade)
         if [ "$EUID" -ne 0 ]; then
-            echo "Warning: For this operation, you must be root"
-            echo "Please be root"
+            echo "$ROOT_WARN1"
+            echo "$ROOT_WARN2"
             exit 1
         else
 	        $APT upgrade -y
